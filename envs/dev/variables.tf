@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region where the SaludNexa core is deployed."
   type        = string
-  default     = "sa-east-1"
+  default     = "us-east-2"
 }
 
 variable "project" {
@@ -29,8 +29,8 @@ variable "availability_zones" {
     secondary = string
   })
   default = {
-    primary   = "sa-east-1a"
-    secondary = "sa-east-1b"
+    primary   = "us-east-2a"
+    secondary = "us-east-2b"
   }
 }
 
