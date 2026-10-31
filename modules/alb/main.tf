@@ -1,6 +1,6 @@
 locals {
   service_priorities = { for index, name in keys(var.services) : name => index + 1 }
-  target_group_names = { for name in keys(var.services) : name => substr(lower("${var.name_prefix}-${name}-tg"), 0, 32) }
+  target_group_names = { for name in keys(var.services) : name => lower("${var.name_prefix}-${name}") }
 }
 
 resource "aws_lb" "this" {
