@@ -81,6 +81,13 @@ terraform apply
 
 Revisa el plan antes de aplicar.
 
+## Costo y limpieza
+
+- Mantener el stack encendido cuesta aproximadamente 0,40 USD por hora en `sa-east-1`; de ese monto, el NAT representa unos 0,093 USD por hora.
+- Ejecuta `terraform destroy` al terminar y crea un presupuesto de 1 USD en AWS Budgets para detectar consumos inesperados.
+- Se requiere una cuenta con permiso para crear roles IAM y con acceso a `sa-east-1`. AWS Academy Learner Lab no sirve para este despliegue.
+- El estado es local, así que solo una persona debe ejecutar `apply` y `destroy`; nadie más debe trabajar en paralelo sobre el mismo entorno.
+
 ## Alarmas
 
 - Cada servicio tiene una alarma de CPU al 80 % sostenida durante 5 periodos de 60 segundos.
