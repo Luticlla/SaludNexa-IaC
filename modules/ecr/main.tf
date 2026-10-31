@@ -32,9 +32,9 @@ resource "aws_ecr_lifecycle_policy" "this" {
           tagStatus   = "any"
           countType   = "imageCountMoreThan"
           countNumber = var.image_retention_count
-          action = {
-            type = "expire"
-          }
+        }
+        action = {
+          type = "expire"
         }
       }
     ]
