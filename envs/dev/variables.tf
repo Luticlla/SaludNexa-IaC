@@ -119,7 +119,7 @@ variable "services" {
 variable "container_image" {
   description = "Placeholder image used by every ECS task definition until backend images are published."
   type        = string
-  default     = "nginx:1.27-alpine"
+  default     = "public.ecr.aws/nginx/nginx:1.27-alpine"
 }
 
 variable "certificate_arn" {

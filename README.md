@@ -33,7 +33,7 @@
 | `pagos-svc` | `/api/pagos/*` | 80 | 512 | 1024 | 1 | 4 |
 | `teleconsulta-svc` | `/api/teleconsulta/*` | 80 | 512 | 1024 | 1 | 4 |
 
-Los cuatro servicios usan la imagen `nginx:1.27-alpine` y el puerto `80`.
+Los cuatro servicios usan la imagen `public.ecr.aws/nginx/nginx:1.27-alpine` y el puerto `80`.
 
 ## Variables
 
@@ -47,7 +47,7 @@ Los cuatro servicios usan la imagen `nginx:1.27-alpine` y el puerto `80`.
 | `public_subnet_cidrs` | `object` | `{ a = "10.0.1.0/24", b = "10.0.2.0/24" }` | CIDR de las dos subredes públicas. |
 | `app_subnet_cidr` | `string` | `"10.0.11.0/24"` | CIDR de la subred privada de aplicación. |
 | `services` | `map(object)` | 4 servicios | Puerto, ruta, CPU, memoria y límites de autoescalado por servicio. |
-| `container_image` | `string` | `"nginx:1.27-alpine"` | Imagen usada por todas las task definitions. |
+| `container_image` | `string` | `"public.ecr.aws/nginx/nginx:1.27-alpine"` | Imagen usada por todas las task definitions. |
 | `certificate_arn` | `string` | `""` | ARN ACM para HTTPS; si está vacío se crea HTTP 80 solo para pruebas. |
 | `health_check_path` | `string` | `"/"` | Ruta de health check del ALB. |
 | `health_check_matcher` | `string` | `"200-399"` | Códigos HTTP considerados sanos. |
