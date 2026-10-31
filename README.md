@@ -1,4 +1,6 @@
 # SaludNexa Perú - Terraform Core
+## Diagrama de AWS 
+
 
 ## Estructura
 
