@@ -89,7 +89,7 @@ resource "aws_lb_listener_rule" "this" {
 
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_rate" {
   alarm_name        = "${var.name_prefix}-alb-5xx-rate-high"
-  alarm_description = "ALB 5xx error rate above ${var.alb_5xx_threshold_percent}% of requests."
+  alarm_description = "ALB 5xx error rate (ELB + target) above ${var.alb_5xx_threshold_percent}% of requests."
 
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.alb_5xx_evaluation_periods
@@ -100,17 +100,29 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_rate" {
 
   metric_query {
     id          = "error_rate"
-    expression  = "100 * errors / requests"
+    expression  = "100 * (elb_errors + target_errors) / requests"
     label       = "ALB 5xx rate (%)"
     return_data = true
   }
 
   metric_query {
-    id = "errors"
+    id = "elb_errors"
 
     metric {
       namespace   = "AWS/ApplicationELB"
       metric_name = "HTTPCode_ELB_5XX_Count"
+      dimensions  = { LoadBalancer = aws_lb.this.arn_suffix }
+      period      = 300
+      stat        = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "target_errors"
+
+    metric {
+      namespace   = "AWS/ApplicationELB"
+      metric_name = "HTTPCode_Target_5XX_Count"
       dimensions  = { LoadBalancer = aws_lb.this.arn_suffix }
       period      = 300
       stat        = "Sum"

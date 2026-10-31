@@ -84,5 +84,5 @@ Revisa el plan antes de aplicar.
 ## Alarmas
 
 - Cada servicio tiene una alarma de CPU al 80 % sostenida durante 5 periodos de 60 segundos.
-- El ALB tiene una alarma de tasa de errores 5xx al 0,1 % durante 2 periodos de 300 segundos.
+- El ALB tiene una alarma de tasa de errores 5xx (ALB y target) al 0,1 % durante 2 periodos de 300 segundos.
 - Las alarmas no tienen acciones por defecto. La variable `alarm_actions` permite conectar ARNs de SNS existentes.
