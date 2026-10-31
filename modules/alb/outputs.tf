@@ -26,6 +26,7 @@ output "listener_arn" {
 output "target_group_arns" {
   description = "Target group ARNs keyed by service name."
   value       = { for name, target_group in aws_lb_target_group.this : name => target_group.arn }
+  depends_on  = [aws_lb_listener_rule.this]
 }
 
 output "target_group_names" {
