@@ -1,0 +1,13 @@
+formatter: markdown table
+
+output:
+  file: README.md
+  mode: replace
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  hide-empty: true
+  lockfile: false
