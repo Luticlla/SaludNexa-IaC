@@ -1,0 +1,56 @@
+name: Despliegue de Terraform en el ambiente dev
+run-name: Despliegue en dev del commit ${{ github.sha }}
+
+on:
+  push:
+    branches: [development]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: despliegue-terraform-dev
+  cancel-in-progress: false
+
+jobs:
+  desplegar-en-dev:
+    name: Aplicar la infraestructura de SaludNexa en dev usando OIDC
+    runs-on: ubuntu-latest
+    environment: dev
+    defaults:
+      run:
+        working-directory: envs/dev
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.4"
+
+      - name: Asumir el rol de AWS mediante OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verificar el formato de los archivos Terraform
+        run: terraform fmt -check
+
+      - name: Inicializar Terraform con el backend s3
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=saludnexa/dev/terraform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}"
+
+      - name: Validar la configuracion de Terraform
+        run: terraform validate
+
+      - name: Generar el plan de Terraform
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Aplicar el plan de Terraform
+        run: terraform apply -input=false tfplan
