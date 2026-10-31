@@ -1,0 +1,33 @@
+name: Validacion de Terraform en pull requests
+run-name: Validacion de Terraform para ${{ github.event.pull_request.title }}
+
+on:
+  pull_request:
+    branches: [development]
+
+permissions:
+  contents: read
+
+jobs:
+  validar-terraform:
+    name: Validar formato, inicializacion y sintaxis de Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.4"
+
+      - name: Verificar el formato de todos los archivos Terraform
+        run: terraform fmt -check -recursive
+
+      - name: Inicializar Terraform sin backend
+        working-directory: envs/dev
+        run: terraform init -backend=false -input=false
+
+      - name: Validar la configuracion de Terraform
+        working-directory: envs/dev
+        run: terraform validate
