@@ -20,7 +20,7 @@ jobs:
     environment: dev
     defaults:
       run:
-        working-directory: envs/dev
+        working-directory: iac/envs/dev
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v7

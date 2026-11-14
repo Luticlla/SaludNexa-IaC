@@ -15,6 +15,7 @@ terraform.rc
 *.tfvars.json
 !*.tfvars.example
 backend.hcl
+result.xml
 .DS_Store
 .idea/
 .vscode/
