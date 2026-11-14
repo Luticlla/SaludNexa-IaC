@@ -22,12 +22,13 @@ jobs:
           terraform_version: "1.16.4"
 
       - name: Verificar el formato de todos los archivos Terraform
+        working-directory: iac
         run: terraform fmt -check -recursive
 
       - name: Inicializar Terraform sin backend
-        working-directory: envs/dev
+        working-directory: iac/envs/dev
         run: terraform init -backend=false -input=false
 
       - name: Validar la configuracion de Terraform
-        working-directory: envs/dev
+        working-directory: iac/envs/dev
         run: terraform validate

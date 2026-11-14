@@ -10,22 +10,23 @@
 │   └── workflows/
 │       ├── validacion-pull-requests.yml
 │       └── despliegue-development.yml
-├── envs/dev/
-│   ├── main.tf
-│   ├── outputs.tf
-│   ├── variables.tf
-│   ├── versions.tf
-│   ├── providers.tf
-│   ├── terraform.tfvars.example
-│   ├── backend.hcl.example
-│   └── .terraform.lock.hcl
-├── modules/
-│   ├── network/
-│   ├── security/
-│   ├── iam/
-│   ├── ecr/
-│   ├── ecs/
-│   └── alb/
+├── iac/
+│   ├── envs/dev/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   ├── versions.tf
+│   │   ├── providers.tf
+│   │   ├── terraform.tfvars.example
+│   │   ├── backend.hcl.example
+│   │   └── .terraform.lock.hcl
+│   └── modules/
+│       ├── network/
+│       ├── security/
+│       ├── iam/
+│       ├── ecr/
+│       ├── ecs/
+│       └── alb/
 ├── README.md
 ├── .gitignore
 └── .terraform-docs.yml
@@ -74,15 +75,15 @@ Los cuatro servicios usan la imagen `public.ecr.aws/nginx/nginx:1.27-alpine` y e
 
 ## Estado remoto (backend S3)
 
-El entorno `dev` usa un backend S3 con configuración parcial: `envs/dev/versions.tf` declara `backend "s3" {}` y los valores se pasan al inicializar. El estado se guarda en el bucket `saludnexa-bucket`, con la clave `saludnexa/dev/terraform.tfstate`, en la región `us-east-2`, cifrado y con bloqueo nativo de S3 (`use_lockfile = true`), que evita dos `apply` simultáneos.
+El entorno `dev` usa un backend S3 con configuración parcial: `iac/envs/dev/versions.tf` declara `backend "s3" {}` y los valores se pasan al inicializar. El estado se guarda en el bucket `saludnexa-bucket`, con la clave `saludnexa/dev/terraform.tfstate`, en la región `us-east-2`, cifrado y con bloqueo nativo de S3 (`use_lockfile = true`), que evita dos `apply` simultáneos.
 
-- `envs/dev/backend.hcl.example` es la plantilla versionada. `backend.hcl` está en `.gitignore` y no debe subirse.
+- `iac/envs/dev/backend.hcl.example` es la plantilla versionada. `backend.hcl` está en `.gitignore` y no debe subirse.
 - La clave está fijada por la política del rol de IAM de despliegue: no la cambies.
 
 Para trabajar en local:
 
 ```bash
-cd envs/dev
+cd iac/envs/dev
 cp backend.hcl.example backend.hcl
 # edita backend.hcl y coloca tu bucket en el marcador REEMPLAZAR_POR_TU_BUCKET
 terraform init -backend-config=backend.hcl
@@ -91,7 +92,7 @@ terraform init -backend-config=backend.hcl
 ## Despliegue
 
 ```bash
-cd /ruta/al/repositorio
+cd /ruta/al/repositorio/iac
 terraform fmt -check -recursive
 
 cd envs/dev
