@@ -29,6 +29,16 @@ variable "app_subnet_cidr" {
   type        = string
 }
 
+variable "kms_key_arn" {
+  description = "ARN de la clave KMS que cifra los flow logs de la VPC."
+  type        = string
+}
+
+variable "flow_log_retention_days" {
+  description = "Días de retención del log group de los flow logs."
+  type        = number
+}
+
 variable "tags" {
   description = "Common tags applied to network resources."
   type        = map(string)
