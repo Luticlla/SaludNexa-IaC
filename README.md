@@ -26,7 +26,8 @@
 │       ├── iam/
 │       ├── ecr/
 │       ├── ecs/
-│       └── alb/
+│       ├── alb/
+│       └── monitoring/
 ├── README.md
 ├── .gitignore
 └── .terraform-docs.yml
@@ -71,6 +72,7 @@ Los cuatro servicios usan la imagen `public.ecr.aws/nginx/nginx:1.27-alpine` y e
 | `alb_5xx_threshold_percent` | `number` | `0.1` | Porcentaje de errores 5xx del ALB que dispara la alarma. |
 | `alb_5xx_evaluation_periods` | `number` | `2` | Periodos de 300 segundos para disparar la alarma 5xx. |
 | `alarm_actions` | `list(string)` | `[]` | ARNs opcionales notificados por las alarmas. |
+| `alert_email` | `string` | `""` | Correo que recibe las alarmas vía SNS; si está vacío no se crea la suscripción. |
 | `tags` | `map(string)` | `{}` | Tags adicionales fusionados con los tags comunes. |
 
 ## Estado remoto (backend S3)
@@ -106,6 +108,19 @@ terraform apply
 
 Revisa el plan antes de aplicar.
 
+El rol de IAM con el que se despliega (en local o desde GitHub Actions) necesita permisos para los recursos que crea este repositorio. Se configuran en AWS, fuera del repositorio:
+
+| Servicio | Permisos |
+| --- | --- |
+| KMS | `CreateKey`, `CreateAlias`, `PutKeyPolicy`, `EnableKeyRotation`, `TagResource`, `ScheduleKeyDeletion` |
+| SNS | `CreateTopic`, `SetTopicAttributes`, `Subscribe`, `TagResource`, `DeleteTopic` |
+| CloudWatch Logs | `CreateLogGroup`, `PutRetentionPolicy`, `AssociateKmsKey`, `TagResource`, `DeleteLogGroup` |
+| EC2 (flow logs) | `CreateFlowLogs`, `DeleteFlowLogs`, `CreateTags` |
+| IAM | `CreateRole`, `PutRolePolicy`, `DeleteRole`, `DeleteRolePolicy` y `PassRole` limitado al rol de flow logs y a `vpc-flow-logs.amazonaws.com` |
+| CloudWatch | `PutDashboard`, `DeleteDashboards` |
+
+Terraform también necesita permisos de lectura (Describe, Get, List) de esos servicios para el plan y el destroy. La lista refleja lo que despliega este repositorio y puede crecer al agregar recursos; limita cada permiso por ARN cuando el servicio lo permita.
+
 ## Despliegue con GitHub Actions y OIDC
 
 El repositorio se despliega con GitHub Actions usando OpenID Connect: el workflow intercambia un token efímero por credenciales temporales del rol de IAM. No hay access keys ni secretos de AWS en el repositorio.
@@ -136,4 +151,14 @@ Flujo de trabajo:
 
 - Cada servicio tiene una alarma de CPU al 80 % sostenida durante 5 periodos de 60 segundos.
 - El ALB tiene una alarma de tasa de errores 5xx (ALB y target) al 0,1 % durante 2 periodos de 300 segundos.
-- Las alarmas no tienen acciones por defecto. La variable `alarm_actions` permite conectar ARNs de SNS existentes.
+- Las alarmas notifican al tema SNS de monitoreo tanto al dispararse (`ALARM`) como al recuperarse (`OK`).
+- La variable `alarm_actions` permite añadir ARNs de notificación adicionales.
+
+## Monitoreo
+
+El módulo `modules/monitoring` concentra la observabilidad del entorno:
+
+- **Clave KMS** `alias/saludnexa-dev-observabilidad`: cifra los log groups de ECS, el tema SNS y el log group de los flow logs. Tiene rotación automática y ventana de borrado de 7 días. Su política separa los permisos de administración de la cuenta, de CloudWatch Logs (limitado a los log groups de la cuenta) y de CloudWatch Alarms.
+- **Tema SNS** `saludnexa-dev-alertas`: cifrado con la clave anterior. Las alarmas de ECS y del ALB publican ahí al dispararse y al recuperarse. Si defines `alert_email`, se crea una suscripción por correo; AWS envía un correo de confirmación que debes aceptar. Si queda vacío, no se crea la suscripción.
+- **Flow logs de la VPC**: se registra todo el tráfico (`ALL`) en el log group `/aws/vpc-flow-logs/saludnexa-dev`, con agregación de 600 segundos y la retención de `log_retention_days` (14 por defecto). Un rol dedicado escribe los logs y solo tiene permisos sobre ese log group.
+- **Dashboard** `saludnexa-dev-operacion` en CloudWatch → Dashboards: CPU por servicio, tareas en ejecución (Container Insights), peticiones y errores 5xx del ALB.

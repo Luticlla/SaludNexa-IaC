@@ -213,7 +213,7 @@ variable "alert_email" {
 }
 
 variable "alarm_actions" {
-  description = "Optional ARNs notified by CloudWatch alarms. SNS is outside this scope, so the default is empty."
+  description = "ARNs adicionales que notifican las alarmas, además del tema SNS de monitoreo."
   type        = list(string)
   default     = []
 }
