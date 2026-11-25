@@ -49,6 +49,13 @@ module "ecr" {
   tags                  = local.common_tags
 }
 
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  name_prefix = local.name_prefix
+  tags        = local.common_tags
+}
+
 module "ecs" {
   source = "../../modules/ecs"
 
