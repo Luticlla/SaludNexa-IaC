@@ -54,9 +54,12 @@ module "ecr" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  name_prefix = local.name_prefix
-  alert_email = var.alert_email
-  tags        = local.common_tags
+  name_prefix    = local.name_prefix
+  alert_email    = var.alert_email
+  cluster_name   = module.ecs.cluster_name
+  service_names  = module.ecs.service_names
+  alb_arn_suffix = module.alb.alb_arn_suffix
+  tags           = local.common_tags
 }
 
 module "ecs" {

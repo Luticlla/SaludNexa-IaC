@@ -92,3 +92,78 @@ resource "aws_sns_topic_subscription" "email" {
   protocol  = "email"
   endpoint  = var.alert_email
 }
+
+resource "aws_cloudwatch_dashboard" "operations" {
+  dashboard_name = "${var.name_prefix}-operacion"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title   = "CPU por servicio (ECS)"
+          region  = data.aws_region.current.name
+          view    = "timeSeries"
+          stat    = "Average"
+          period  = 300
+          metrics = [for service in values(var.service_names) : ["AWS/ECS", "CPUUtilization", "ClusterName", var.cluster_name, "ServiceName", service]]
+          yAxis   = { left = { min = 0, max = 100 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title   = "Tareas en ejecución (Container Insights)"
+          region  = data.aws_region.current.name
+          view    = "timeSeries"
+          stat    = "Average"
+          period  = 300
+          metrics = [for service in values(var.service_names) : ["ECS/ContainerInsights", "RunningTaskCount", "ClusterName", var.cluster_name, "ServiceName", service]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
+
+        properties = {
+          title   = "Peticiones al ALB"
+          region  = data.aws_region.current.name
+          view    = "timeSeries"
+          period  = 300
+          metrics = [["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "Errores 5xx del ALB"
+          region = data.aws_region.current.name
+          view   = "timeSeries"
+          period = 300
+          metrics = [
+            ["AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }],
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }],
+          ]
+        }
+      },
+    ]
+  })
+}
