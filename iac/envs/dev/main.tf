@@ -53,6 +53,7 @@ module "monitoring" {
   source = "../../modules/monitoring"
 
   name_prefix = local.name_prefix
+  alert_email = var.alert_email
   tags        = local.common_tags
 }
 
@@ -77,7 +78,7 @@ module "ecs" {
   scale_in_cooldown                  = var.scale_in_cooldown
   cpu_alarm_threshold                = var.cpu_alarm_threshold
   cpu_alarm_evaluation_periods       = var.cpu_alarm_evaluation_periods
-  alarm_actions                      = var.alarm_actions
+  alarm_actions                      = concat(var.alarm_actions, [module.monitoring.sns_topic_arn])
   tags                               = local.common_tags
 
   depends_on = [module.iam]
@@ -96,6 +97,6 @@ module "alb" {
   health_check_matcher       = var.health_check_matcher
   alb_5xx_threshold_percent  = var.alb_5xx_threshold_percent
   alb_5xx_evaluation_periods = var.alb_5xx_evaluation_periods
-  alarm_actions              = var.alarm_actions
+  alarm_actions              = concat(var.alarm_actions, [module.monitoring.sns_topic_arn])
   tags                       = local.common_tags
 }
