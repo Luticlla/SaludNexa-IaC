@@ -27,6 +27,7 @@ resource "aws_cloudwatch_log_group" "service" {
 
   name              = "/ecs/${var.name_prefix}/${each.key}"
   retention_in_days = var.log_retention_days
+  kms_key_id        = var.kms_key_arn
 
   tags = merge(var.tags, {
     Name = "/ecs/${var.name_prefix}/${each.key}"

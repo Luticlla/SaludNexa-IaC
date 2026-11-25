@@ -62,6 +62,7 @@ module "ecs" {
   name_prefix                        = local.name_prefix
   services                           = var.services
   log_retention_days                 = var.log_retention_days
+  kms_key_arn                        = module.monitoring.kms_key_arn
   aws_region                         = var.aws_region
   container_image                    = var.container_image
   execution_role_arn                 = module.iam.execution_role_arn

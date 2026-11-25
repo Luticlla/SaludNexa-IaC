@@ -20,6 +20,11 @@ variable "log_retention_days" {
   type        = number
 }
 
+variable "kms_key_arn" {
+  description = "ARN de la clave KMS que cifra los log groups de CloudWatch."
+  type        = string
+}
+
 variable "aws_region" {
   description = "AWS region used by the awslogs driver."
   type        = string
