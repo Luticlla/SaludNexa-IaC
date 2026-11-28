@@ -206,8 +206,14 @@ variable "alb_5xx_evaluation_periods" {
   default     = 2
 }
 
+variable "alert_email" {
+  description = "Correo que recibe las notificaciones de las alarmas. Si está vacío no se crea la suscripción."
+  type        = string
+  default     = ""
+}
+
 variable "alarm_actions" {
-  description = "Optional ARNs notified by CloudWatch alarms. SNS is outside this scope, so the default is empty."
+  description = "ARNs adicionales que notifican las alarmas, además del tema SNS de monitoreo."
   type        = list(string)
   default     = []
 }

@@ -15,12 +15,14 @@ locals {
 module "network" {
   source = "../../modules/network"
 
-  name_prefix         = local.name_prefix
-  vpc_cidr            = var.vpc_cidr
-  availability_zones  = var.availability_zones
-  public_subnet_cidrs = var.public_subnet_cidrs
-  app_subnet_cidr     = var.app_subnet_cidr
-  tags                = local.common_tags
+  name_prefix             = local.name_prefix
+  vpc_cidr                = var.vpc_cidr
+  availability_zones      = var.availability_zones
+  public_subnet_cidrs     = var.public_subnet_cidrs
+  app_subnet_cidr         = var.app_subnet_cidr
+  kms_key_arn             = module.monitoring.kms_key_arn
+  flow_log_retention_days = var.log_retention_days
+  tags                    = local.common_tags
 }
 
 module "security" {
@@ -49,12 +51,24 @@ module "ecr" {
   tags                  = local.common_tags
 }
 
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  name_prefix    = local.name_prefix
+  alert_email    = var.alert_email
+  cluster_name   = module.ecs.cluster_name
+  service_names  = module.ecs.service_names
+  alb_arn_suffix = module.alb.alb_arn_suffix
+  tags           = local.common_tags
+}
+
 module "ecs" {
   source = "../../modules/ecs"
 
   name_prefix                        = local.name_prefix
   services                           = var.services
   log_retention_days                 = var.log_retention_days
+  kms_key_arn                        = module.monitoring.kms_key_arn
   aws_region                         = var.aws_region
   container_image                    = var.container_image
   execution_role_arn                 = module.iam.execution_role_arn
@@ -69,7 +83,7 @@ module "ecs" {
   scale_in_cooldown                  = var.scale_in_cooldown
   cpu_alarm_threshold                = var.cpu_alarm_threshold
   cpu_alarm_evaluation_periods       = var.cpu_alarm_evaluation_periods
-  alarm_actions                      = var.alarm_actions
+  alarm_actions                      = concat(var.alarm_actions, [module.monitoring.sns_topic_arn])
   tags                               = local.common_tags
 
   depends_on = [module.iam]
@@ -88,6 +102,6 @@ module "alb" {
   health_check_matcher       = var.health_check_matcher
   alb_5xx_threshold_percent  = var.alb_5xx_threshold_percent
   alb_5xx_evaluation_periods = var.alb_5xx_evaluation_periods
-  alarm_actions              = var.alarm_actions
+  alarm_actions              = concat(var.alarm_actions, [module.monitoring.sns_topic_arn])
   tags                       = local.common_tags
 }
